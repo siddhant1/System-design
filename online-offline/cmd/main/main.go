@@ -5,6 +5,7 @@ import (
 	"online-indicator/pkg/routes"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,8 +22,13 @@ func main() {
 
 	e := echo.New()
 	rdc := db.NewRedisClient()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 	e.Use(dbMiddleware(rdc))
 
-	e.GET("/api/users", routes.UserHandler)
-	e.Logger.Fatal(e.Start(":1323"))
+	e.GET("/api/users/status", routes.UserHandler)
+	e.POST("/api/users/hb", routes.UserHeartBeatHandler)
+	e.Logger.Fatal(e.Start(":1324"))
 }
